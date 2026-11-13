@@ -6,8 +6,10 @@ readme = "README.md"
 authors = [
     { name = "Loik Constant", email = "loik.constant@hotmail.com" }
 ]
-requires-python = ">=3.14"
-dependencies = []
+requires-python = ">=3.12"
+dependencies = [
+    "pygame>=2.6.1",
+]
 
 [project.scripts]
 tp2-2537052 = "tp2_2537052:main"
