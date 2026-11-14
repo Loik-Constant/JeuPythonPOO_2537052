@@ -1,7 +1,9 @@
 import sys
 import pygame
+from pygame.sprite import Group
 
 from game_elements.player import Player
+from game_elements.projectiles import Projectile
 
 
 class Game:
@@ -30,9 +32,10 @@ class Game:
         self.player = Player(
             x=(self.width - 50) // 4,
             y=(self.height - 50) // 2,
-            taille=50,
-            limites=limits,
+            size=50,
+            limits=limits,
         )
+        self.player_projectiles = Group()
 
         # État du jeu
         self.running = True
@@ -52,7 +55,11 @@ class Game:
         if self.game_over:
             return
 
-        self.player.mise_a_jour()
+        self.player.update()
+        if self.player.get_projectiles() is not None:
+            self.player.get_projectiles().add(self.player_projectiles)
+
+        self.player_projectiles.update()
 
     def draw_game_over(self) -> None:
         """Affiche les messages de fin de partie à l'écran."""
@@ -72,6 +79,7 @@ class Game:
 
         # Dessin des entités
         self.player.draw(self.window)
+        self.player_projectiles.draw(self.window)
 
         if self.game_over:
             self.draw_game_over()

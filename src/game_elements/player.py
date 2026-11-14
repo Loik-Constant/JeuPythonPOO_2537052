@@ -1,26 +1,34 @@
 import math
+from random import random
 
 from game_elements.game_element import GameElement
 
 import pygame
+
+from game_elements.projectiles import Projectile
+
 
 class Player(GameElement):
     """Représente le carré contrôlé par l'utilisateur au clavier."""
 
     def __init__(
             self,
-            x: float,
-            y: float,
-            taille: int = 50,
-            couleur: tuple[int, int, int] = (70, 130, 180),
-            limites: tuple[int, int] = (800, 600),
-            vitesse: float = 30.0,
+            x: int,
+            y: int,
+            size: int = 50,
+            image: str = 'images/isook.png',
+            limits: tuple[int, int] = (1100, 600),
+            speed: float = 30.0,
+            fire_interval: int = 60
     ):
-        super().__init__(x, y, taille, couleur, limites)
-        self.vitesse = vitesse
+        super().__init__(x, y, size, image, limits)
+        self.speed = speed
+        self.fire_interval = fire_interval
+        self.counter = 0
 
-    def mise_a_jour(self) -> None:
-        """Met à jour la position du joueur en fonction des touches pressées."""
+
+    def update(self) -> None:
+        """Met à jour la position du joueur en fonction de la position de la souris."""
         mouse_x, mouse_y = pygame.mouse.get_pos()
         mouse_x -= self.size / 2
         mouse_y -= self.size / 2
@@ -30,13 +38,28 @@ class Player(GameElement):
             direction = direction.normalize()
 
         if self.x <= mouse_x:
-            self.x += min(direction.x * self.vitesse, mouse_x - self.x)
+            self.x += min(direction.x * self.speed, mouse_x - self.x)
         else:
-            self.x += max(direction.x * self.vitesse, mouse_x - self.x)
+            self.x += max(direction.x * self.speed, mouse_x - self.x)
 
         if self.y <= mouse_y:
-            self.y += min(direction.y * self.vitesse, mouse_y - self.y)
+            self.y += min(direction.y * self.speed, mouse_y - self.y)
         else:
-            self.y += max(direction.y * self.vitesse, mouse_y - self.y)
+            self.y += max(direction.y * self.speed, mouse_y - self.y)
 
-        self.restreindre_a_ecran()
+        self.restrict_to_screen()
+        self.rect.topleft = (int(self.x), int(self.y))
+
+        self.counter += 1
+
+
+
+    def get_projectiles(self) -> Projectile | None:
+        """Retourne un projectile s'il est temps pour le joueur de tirer, sinon, ne retourne rien"""
+        if self.counter % self.fire_interval == 0:
+            return Projectile(
+                x = self.x + self.size / 4,
+                y = self.y + self.size / 4,
+                angle = 0
+            )
+        return None
