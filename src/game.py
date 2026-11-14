@@ -2,6 +2,7 @@ import sys
 import pygame
 from pygame.sprite import Group
 
+from game_elements.enemies import Enemy
 from game_elements.player import Player
 from game_elements.projectiles import Projectile
 
@@ -37,6 +38,21 @@ class Game:
         )
         self.player_projectiles = Group()
 
+        self.enemies = Group()
+        Enemy(
+            x=900,
+            y=200,
+            size=50,
+            limits=limits,
+        ).add(self.enemies)
+
+        Enemy(
+            x=900,
+            y=500,
+            size=50,
+            limits=limits,
+        ).add(self.enemies)
+
         # État du jeu
         self.running = True
         self.game_over = False
@@ -60,6 +76,13 @@ class Game:
             self.player.get_projectiles().add(self.player_projectiles)
 
         self.player_projectiles.update()
+        self.enemies.update()
+
+        hit_enemies = pygame.sprite.groupcollide(self.enemies, self.player_projectiles, False, True)
+        for enemy in hit_enemies:
+            if isinstance(enemy, Enemy):
+                enemy.take_damage(1)
+
 
     def draw_game_over(self) -> None:
         """Affiche les messages de fin de partie à l'écran."""
@@ -80,6 +103,7 @@ class Game:
         # Dessin des entités
         self.player.draw(self.window)
         self.player_projectiles.draw(self.window)
+        self.enemies.draw(self.window)
 
         if self.game_over:
             self.draw_game_over()

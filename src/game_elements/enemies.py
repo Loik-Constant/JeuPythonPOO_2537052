@@ -14,12 +14,12 @@ class Enemy(GameElement):
             self,
             x: float,
             y: float,
-            taille: int = 40,
+            size: int = 40,
             image: str = 'images/isook.png',
-            limites: tuple[int, int] = (800, 600),
-            health: int = 0
+            limits: tuple[int, int] = (800, 600),
+            health: int = 3
     ):
-        super().__init__(x, y, taille, image, limites)
+        super().__init__(x, y, size, image, limits)
         self.health = health
 
     def take_damage(self, damage : int) -> None:
@@ -27,7 +27,3 @@ class Enemy(GameElement):
 
         if self.health <= 0:
             self.kill()
-
-
-
-
