@@ -3,7 +3,7 @@ import sys
 import pygame
 
 from pygame.sprite import Group
-from game_elements.enemies import Enemy
+from game_elements.enemies import Enemy, Charger, Bouncer
 from game_elements.player import Player
 from game_elements.projectiles import Projectile
 
@@ -16,12 +16,8 @@ class Game:
     GAMEOVER_COLOR = (230, 50, 50)
 
     ENEMY_TYPES = [
-        Enemy(
-            size=50,
-        ),
-        Enemy(
-            size=25,
-        )
+        Charger(),
+        Bouncer()
     ]
 
     def __init__(self, width: int = 1100, height: int = 600, fps: int = 60):
@@ -34,7 +30,7 @@ class Game:
         pygame.display.set_caption("pew pew game")
         self.clock = pygame.time.Clock()
 
-        self.enemy_counter = 1
+        self.counter = 1
         self.enemy_interval = 100
 
         # Polices
@@ -83,11 +79,11 @@ class Game:
             if isinstance(enemy, Enemy):
                 enemy.take_damage()
 
-        self.enemy_counter += 1
-        if self.enemy_counter % self.enemy_interval == 0:
+        self.counter += 1
+        if self.counter % self.enemy_interval == 0:
             new_enemy = self.ENEMY_TYPES[random.randint(0, len(self.ENEMY_TYPES) - 1)].copy()
             new_enemy.x = 1000
-            new_enemy.y = random.randint(0, 600)
+            new_enemy.y = random.randint(0, 600 - new_enemy.size)
             new_enemy.add(self.enemies)
 
     def draw_game_over(self) -> None:

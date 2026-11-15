@@ -15,7 +15,7 @@ class Projectile(GameElement):
             damage: int = 0
     ):
         super().__init__(x, y, size, image_file, limits)
-        self.vitesse = speed
+        self.speed = speed
         self.damage = damage
 
         self.vx = math.cos(math.radians(angle))
@@ -23,8 +23,8 @@ class Projectile(GameElement):
 
 
     def update(self) -> None:
-        self.x += self.vx * self.vitesse
-        self.y += self.vy * self.vitesse
+        self.x += self.vx * self.speed
+        self.y += self.vy * self.speed
 
         self.destroy_offscreen()
         self.rect.topleft = (int(self.x), int(self.y))
