@@ -8,13 +8,13 @@ class Projectile(GameElement):
             x: float,
             y: float,
             size: int = 25,
-            image: str = 'images/isook.png',
+            image_file: str = 'images/tear.png',
             limits: tuple[int, int] = (1100, 600),
-            speed: float = 5.0,
+            speed: float = 30.0,
             angle: float = 0,
             damage: int = 0
     ):
-        super().__init__(x, y, size, image, limits)
+        super().__init__(x, y, size, image_file, limits)
         self.vitesse = speed
         self.damage = damage
 

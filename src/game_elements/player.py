@@ -16,15 +16,15 @@ class Player(GameElement):
             x: int,
             y: int,
             size: int = 50,
-            image: str = 'images/isook.png',
+            image_file: str = 'images/isook.png',
             limits: tuple[int, int] = (1100, 600),
             speed: float = 30.0,
-            fire_interval: int = 60
+            fire_interval: int = 10
     ):
-        super().__init__(x, y, size, image, limits)
+        super().__init__(x, y, size, image_file, limits)
         self.speed = speed
         self.fire_interval = fire_interval
-        self.counter = 0
+        self.counter = 1
 
 
     def update(self) -> None:

@@ -1,7 +1,8 @@
+import random
 import sys
 import pygame
-from pygame.sprite import Group
 
+from pygame.sprite import Group
 from game_elements.enemies import Enemy
 from game_elements.player import Player
 from game_elements.projectiles import Projectile
@@ -14,6 +15,15 @@ class Game:
     TEXT_COLOR = (255, 255, 255)
     GAMEOVER_COLOR = (230, 50, 50)
 
+    ENEMY_TYPES = [
+        Enemy(
+            size=50,
+        ),
+        Enemy(
+            size=25,
+        )
+    ]
+
     def __init__(self, width: int = 1100, height: int = 600, fps: int = 60):
         pygame.init()
         self.width = width
@@ -23,6 +33,9 @@ class Game:
         self.window = pygame.display.set_mode((self.width, self.height))
         pygame.display.set_caption("pew pew game")
         self.clock = pygame.time.Clock()
+
+        self.enemy_counter = 1
+        self.enemy_interval = 100
 
         # Polices
         self.font_title = pygame.font.Font(None, 64)
@@ -39,19 +52,6 @@ class Game:
         self.player_projectiles = Group()
 
         self.enemies = Group()
-        Enemy(
-            x=900,
-            y=200,
-            size=50,
-            limits=limits,
-        ).add(self.enemies)
-
-        Enemy(
-            x=900,
-            y=500,
-            size=50,
-            limits=limits,
-        ).add(self.enemies)
 
         # État du jeu
         self.running = True
@@ -81,8 +81,14 @@ class Game:
         hit_enemies = pygame.sprite.groupcollide(self.enemies, self.player_projectiles, False, True)
         for enemy in hit_enemies:
             if isinstance(enemy, Enemy):
-                enemy.take_damage(1)
+                enemy.take_damage()
 
+        self.enemy_counter += 1
+        if self.enemy_counter % self.enemy_interval == 0:
+            new_enemy = self.ENEMY_TYPES[random.randint(0, len(self.ENEMY_TYPES) - 1)].copy()
+            new_enemy.x = 1000
+            new_enemy.y = random.randint(0, 600)
+            new_enemy.add(self.enemies)
 
     def draw_game_over(self) -> None:
         """Affiche les messages de fin de partie à l'écran."""

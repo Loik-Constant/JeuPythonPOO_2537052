@@ -12,18 +12,34 @@ class Enemy(GameElement):
 
     def __init__(
             self,
-            x: float,
-            y: float,
+            x: float = 0,
+            y: float = 0,
             size: int = 40,
-            image: str = 'images/isook.png',
-            limits: tuple[int, int] = (800, 600),
+            image_file: str = 'images/isook.png',
+            limits: tuple[int, int] = (1100, 600),
             health: int = 3
     ):
-        super().__init__(x, y, size, image, limits)
+        super().__init__(x, y, size, image_file, limits)
         self.health = health
 
-    def take_damage(self, damage : int) -> None:
-        self.health -= damage
+    def copy(self) -> "Enemy":
+        """Retourne une copie de l'ennemi"""
+        return Enemy(
+            self.x,
+            self.y,
+            self.size,
+            self.image_file,
+            self.limits,
+            self.health
+        )
+
+    def take_damage(self) -> None:
+        """Réduit les points de vie de l'ennemi"""
+        self.health -= 1
 
         if self.health <= 0:
             self.kill()
+
+    def update(self):
+        """Met à jour la position de l'ennemi'."""
+        self.rect.topleft = (int(self.x), int(self.y))
