@@ -41,21 +41,21 @@ class GameElement(Sprite):
         """
         Maintient l'élément à l'intérieur des bordures de la fenêtre.
 
-        :param restrict_x : Détermine si l'élément peut sortir de l'écran horizontalement
-        :param restrict_y : Détermine si l'élément peut sortir de l'écran verticalement
+        :param restrict_x : Empêche l'élément de sortir de l'écran horizontalement
+        :param restrict_y : Empêche l'élément de sortir de l'écran verticalement
         """
         if restrict_x:
-            self.x = max(0.0, min(float(self.screen_width - self.size), self.x))
+            self.x = max(0.0 + self.size / 2, min(float(self.screen_width - self.size / 2), self.x))
 
         if restrict_y:
-            self.y = max(0.0, min(float(self.screen_height - self.size), self.y))
+            self.y = max(0.0  + self.size / 2, min(float(self.screen_height - self.size / 2), self.y))
 
-        self.rect.topleft = (int(self.x), int(self.y))
+        self.rect.center = (int(self.x), int(self.y))
 
     def destroy_offscreen(self) -> None:
         """Détruit l'élément s'il sort de la fenêtre de jeu"""
-        if self.x < 0 - self.size or self.x > self.screen_width + self.size:
+        if self.x < 0 - self.size / 2 or self.x > self.screen_width + self.size / 2:
             self.kill()
 
-        if self.y < 0 - self.size or self.y > self.screen_height + self.size:
+        if self.y < 0 - self.size / 2 or self.y > self.screen_height + self.size / 2:
             self.kill()

@@ -2,10 +2,9 @@ import random
 import sys
 import pygame
 
-from pygame.sprite import Group, Sprite
+from pygame.sprite import Group
 from game_elements.enemies import Enemy, Charger, Bouncer, Shooter, Exploder
 from game_elements.player import Player
-from game_elements.projectiles import Projectile
 
 
 class Game:
@@ -19,7 +18,7 @@ class Game:
         Charger(),
         Bouncer(),
         Shooter(),
-        Exploder()
+        Exploder(),
     ]
 
     def __init__(self, width: int = 1100, height: int = 600, fps: int = 60):
@@ -69,11 +68,13 @@ class Game:
         if self.game_over:
             return
 
+        # Mouvement et tire du joueur
         self.player.update()
-        if self.player.get_projectiles() is not None:
-            self.player.get_projectiles().add(self.player_projectiles)
+        for projectile in self.player.get_projectiles():
+            projectile.add(self.player_projectiles)
         self.player_projectiles.update()
 
+        # Mouvement et tire des ennemis
         self.enemies.update()
         for enemy in self.enemies:
             if isinstance(enemy, Enemy):
@@ -81,6 +82,7 @@ class Game:
                     projectile.add(self.enemy_projectiles)
         self.enemy_projectiles.update()
 
+        # Collision du joueur avec les ennemis/projectiles
         for enemy in self.enemies:
             if self.player.is_touching(enemy):
                 self.game_over = True
@@ -89,18 +91,21 @@ class Game:
             if self.player.is_touching(enemy_projectile):
                 self.game_over = True
 
+        # Collision des ennemis avec les projectiles du joueur
         hit_enemies = pygame.sprite.groupcollide(self.enemies, self.player_projectiles, False, True)
         for enemy in hit_enemies:
             if isinstance(enemy, Enemy):
                 enemy.take_damage()
-                for projectile in enemy.get_death_projectiles():
-                    projectile.add(self.enemy_projectiles)
+                if enemy.health <= 0:
+                    for projectile in enemy.get_death_projectiles():
+                        projectile.add(self.enemy_projectiles)
 
+        # Apparition des ennemis
         self.counter += 1
         if self.counter % self.enemy_interval == 0:
             new_enemy = self.ENEMY_TYPES[random.randint(0, len(self.ENEMY_TYPES) - 1)].copy()
-            new_enemy.x = 1100 - new_enemy.size
-            new_enemy.y = random.randint(0, 600 - new_enemy.size)
+            new_enemy.x = 1100 - new_enemy.size / 2
+            new_enemy.y = random.randint(0 + int(new_enemy.size / 2), 600 - int(new_enemy.size / 2))
             new_enemy.add(self.enemies)
 
     def draw_game_over(self) -> None:

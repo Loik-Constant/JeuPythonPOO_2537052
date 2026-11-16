@@ -23,12 +23,9 @@ class Player(GameElement):
         self.fire_interval = fire_interval
         self.counter = 1
 
-
     def update(self) -> None:
         """Met à jour la position du joueur en fonction de la position de la souris."""
         mouse_x, mouse_y = pygame.mouse.get_pos()
-        mouse_x -= self.size / 2
-        mouse_y -= self.size / 2
 
         direction = pygame.math.Vector2(mouse_x - self.x, mouse_y - self.y)
         if direction.length() > 0:
@@ -45,19 +42,18 @@ class Player(GameElement):
             self.y += max(direction.y * self.speed, mouse_y - self.y)
 
         self.restrict_to_screen(True, True)
-        self.rect.topleft = (int(self.x), int(self.y))
+        self.rect.center = (int(self.x), int(self.y))
 
         self.counter += 1
 
-
-
-    def get_projectiles(self) -> Projectile | None:
+    def get_projectiles(self) -> list[Projectile]:
         """Retourne un projectile s'il est temps pour le joueur de tirer, sinon, ne retourne rien"""
+        projectiles = []
         if self.counter % self.fire_interval == 0:
-            return Projectile(
-                x = self.x + self.size / 4,
-                y = self.y + self.size / 4,
+            projectiles.append(Projectile(
+                x = self.x,
+                y = self.y,
                 speed=30,
                 angle = 0
-            )
-        return None
+            ))
+        return projectiles

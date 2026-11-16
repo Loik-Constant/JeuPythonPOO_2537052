@@ -81,7 +81,7 @@ class Charger(Enemy):
         self.x -= self.speed
         self.destroy_offscreen()
 
-        self.rect.topleft = (int(self.x), int(self.y))
+        self.rect.center = (int(self.x), int(self.y))
 
     def get_projectiles(self) -> list[Projectile]:
         return []
@@ -106,7 +106,7 @@ class Bouncer(Enemy):
     ):
         super().__init__(x, y, size, image_file, limits, health)
         self.speed = speed
-        self.angle = 135 + (random.randint(0, 1) * 90)
+        self.angle = random.choice([135, 225])
 
         self.vx = math.cos(math.radians(self.angle))
         self.vy = math.sin(math.radians(self.angle))
@@ -126,10 +126,10 @@ class Bouncer(Enemy):
         )
 
     def update(self) -> None:
-        if self.x < 0 or self.x > self.screen_width - self.size:
+        if self.x < 0 + self.size / 2 or self.x > self.screen_width - self.size / 2:
             self.vx *= -1
 
-        if self.y < 0 or self.y > self.screen_height - self.size:
+        if self.y < 0 + self.size / 2 or self.y > self.screen_height - self.size / 2:
             self.vy *= -1
 
         self.x += self.vx * self.speed
@@ -140,9 +140,7 @@ class Bouncer(Enemy):
 
         self.counter += 1
 
-        self.rect.topleft = (int(self.x), int(self.y))
-
-
+        self.rect.center = (int(self.x), int(self.y))
 
     def get_projectiles(self) -> list[Projectile]:
         return []
@@ -157,7 +155,7 @@ class Shooter(Enemy):
             x: float = 0,
             y: float = 0,
             size: int = 50,
-            image_file: str = 'images/isook.png',
+            image_file: str = 'images/shooter.png',
             limits: tuple[int, int] = (1100, 600),
             health: int = 3,
             speed: int = 5,
@@ -165,15 +163,14 @@ class Shooter(Enemy):
     ):
         super().__init__(x, y, size, image_file, limits, health)
         self.speed = speed
-        self.vy = speed
+        self.initial_direction = random.choice([-1, 1])
+        self.vy = speed * self.initial_direction
 
         self.fire_interval = fire_interval
         self.counter = 1
 
         limits_x, limits_y = self.limits
         self.end_point = limits_x - random.randint(100, 300)
-
-
 
     def copy(self) -> "Shooter":
         return Shooter(
@@ -191,19 +188,19 @@ class Shooter(Enemy):
             self.x -= self.speed
         else:
             self.y += self.vy
-            if self.y < 0 or self.y > self.screen_height - self.size:
+            if self.y < 0 + self.size / 2 or self.y > self.screen_height - self.size / 2:
                 self.vy *= -1
 
             self.counter += 1
 
-        self.rect.topleft = (int(self.x), int(self.y))
+        self.rect.center = (int(self.x), int(self.y))
 
     def get_projectiles(self) -> list[Projectile]:
         projectiles = []
         if self.counter % self.fire_interval == 0:
             projectiles.append(Projectile(
-                x=self.x + self.size / 4,
-                y=self.y + self.size / 4,
+                x=self.x,
+                y=self.y,
                 speed=10,
                 angle=180,
                 image_file='images/blood.png'
@@ -227,6 +224,8 @@ class Exploder(Enemy):
     ):
         super().__init__(x, y, size, image_file, limits, health)
         self.speed = speed
+        self.initial_direction = random.choice([-1, 1])
+
         self.counter = 1
 
     def copy(self) -> "Exploder":
@@ -244,25 +243,24 @@ class Exploder(Enemy):
         self.counter += 1
 
         self.x -= self.speed
-        self.y -= math.sin(self.counter / 20) * self.speed
+        self.y -= math.sin(self.counter / 20) * self.speed * self.initial_direction
 
         self.destroy_offscreen()
         self.restrict_to_screen(False, True)
-        self.rect.topleft = (int(self.x) + random.randint(-5, 5), int(self.y) + random.randint(-5, 5))
+        self.rect.center = (int(self.x) + random.randint(-5, 5), int(self.y) + random.randint(-5, 5))
 
     def get_projectiles(self) -> list[Projectile]:
         return []
 
     def get_death_projectiles(self) -> list[Projectile]:
         projectiles = []
-        if self.health <= 0:
-            for x in range(8):
-                projectiles.append(Projectile(
-                    x=self.x + self.size / 4,
-                    y=self.y + self.size / 4,
-                    angle=x * 45,
-                    speed=5,
-                    size=40,
-                    image_file = 'images/blood.png',
-                ))
+        for x in range(8):
+            projectiles.append(Projectile(
+                x=self.x,
+                y=self.y,
+                angle=x * 45,
+                speed=5,
+                size=40,
+                image_file = 'images/spike.png',
+            ))
         return projectiles
