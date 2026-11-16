@@ -2,8 +2,8 @@ import random
 import sys
 import pygame
 
-from pygame.sprite import Group
-from game_elements.enemies import Enemy, Charger, Bouncer
+from pygame.sprite import Group, Sprite
+from game_elements.enemies import Enemy, Charger, Bouncer, Shooter, Exploder
 from game_elements.player import Player
 from game_elements.projectiles import Projectile
 
@@ -11,13 +11,15 @@ from game_elements.projectiles import Projectile
 class Game:
     """Moteur principal orchestrant la boucle de jeu, les entités et l'affichage."""
 
-    BACKGROUND_COLOR = (30, 30, 30)
+    BACKGROUND_COLOR = (30, 60, 30)
     TEXT_COLOR = (255, 255, 255)
     GAMEOVER_COLOR = (230, 50, 50)
 
     ENEMY_TYPES = [
         Charger(),
-        Bouncer()
+        Bouncer(),
+        Shooter(),
+        Exploder()
     ]
 
     def __init__(self, width: int = 1100, height: int = 600, fps: int = 60):
@@ -31,7 +33,7 @@ class Game:
         self.clock = pygame.time.Clock()
 
         self.counter = 1
-        self.enemy_interval = 100
+        self.enemy_interval = 85
 
         # Polices
         self.font_title = pygame.font.Font(None, 64)
@@ -46,8 +48,8 @@ class Game:
             limits=limits,
         )
         self.player_projectiles = Group()
-
         self.enemies = Group()
+        self.enemy_projectiles = Group()
 
         # État du jeu
         self.running = True
@@ -70,19 +72,34 @@ class Game:
         self.player.update()
         if self.player.get_projectiles() is not None:
             self.player.get_projectiles().add(self.player_projectiles)
-
         self.player_projectiles.update()
+
         self.enemies.update()
+        for enemy in self.enemies:
+            if isinstance(enemy, Enemy):
+                for projectile in enemy.get_projectiles():
+                    projectile.add(self.enemy_projectiles)
+        self.enemy_projectiles.update()
+
+        for enemy in self.enemies:
+            if self.player.is_touching(enemy):
+                self.game_over = True
+
+        for enemy_projectile in self.enemy_projectiles:
+            if self.player.is_touching(enemy_projectile):
+                self.game_over = True
 
         hit_enemies = pygame.sprite.groupcollide(self.enemies, self.player_projectiles, False, True)
         for enemy in hit_enemies:
             if isinstance(enemy, Enemy):
                 enemy.take_damage()
+                for projectile in enemy.get_death_projectiles():
+                    projectile.add(self.enemy_projectiles)
 
         self.counter += 1
         if self.counter % self.enemy_interval == 0:
             new_enemy = self.ENEMY_TYPES[random.randint(0, len(self.ENEMY_TYPES) - 1)].copy()
-            new_enemy.x = 1000
+            new_enemy.x = 1100 - new_enemy.size
             new_enemy.y = random.randint(0, 600 - new_enemy.size)
             new_enemy.add(self.enemies)
 
@@ -106,6 +123,7 @@ class Game:
         self.player.draw(self.window)
         self.player_projectiles.draw(self.window)
         self.enemies.draw(self.window)
+        self.enemy_projectiles.draw(self.window)
 
         if self.game_over:
             self.draw_game_over()

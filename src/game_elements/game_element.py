@@ -22,21 +22,38 @@ class GameElement(Sprite):
         self.rect.bottomright = (int(self.x), int(self.y))
 
     def draw(self, surface: pygame.Surface) -> None:
-        """Affiche le carré sur la surface spécifiée."""
+        """
+        Affiche le carré sur la surface spécifiée.
+
+        :param surface : La surface sur laquel afficher l'entité
+        """
         surface.blit(self.image, self.rect)
 
     def is_touching(self, other: "GameElement") -> bool:
-        """Détecte si cet élément entre en collision avec un autre élément."""
+        """
+        Détecte si cet élément entre en collision avec un autre élément.
+
+        :param other : L'autre élément
+        """
         return self.rect.colliderect(other.rect)
 
-    def restrict_to_screen(self) -> None:
-        """Maintient l'élément à l'intérieur des bordures de la fenêtre."""
-        self.x = max(0.0, min(float(self.screen_width - self.size), self.x))
-        self.y = max(0.0, min(float(self.screen_height - self.size), self.y))
+    def restrict_to_screen(self, restrict_x : bool, restrict_y : bool) -> None:
+        """
+        Maintient l'élément à l'intérieur des bordures de la fenêtre.
+
+        :param restrict_x : Détermine si l'élément peut sortir de l'écran horizontalement
+        :param restrict_y : Détermine si l'élément peut sortir de l'écran verticalement
+        """
+        if restrict_x:
+            self.x = max(0.0, min(float(self.screen_width - self.size), self.x))
+
+        if restrict_y:
+            self.y = max(0.0, min(float(self.screen_height - self.size), self.y))
 
         self.rect.topleft = (int(self.x), int(self.y))
 
     def destroy_offscreen(self) -> None:
+        """Détruit l'élément s'il sort de la fenêtre de jeu"""
         if self.x < 0 - self.size or self.x > self.screen_width + self.size:
             self.kill()
 

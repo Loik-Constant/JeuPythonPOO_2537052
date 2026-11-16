@@ -1,6 +1,3 @@
-import math
-from random import random
-
 from game_elements.game_element import GameElement
 
 import pygame
@@ -47,7 +44,7 @@ class Player(GameElement):
         else:
             self.y += max(direction.y * self.speed, mouse_y - self.y)
 
-        self.restrict_to_screen()
+        self.restrict_to_screen(True, True)
         self.rect.topleft = (int(self.x), int(self.y))
 
         self.counter += 1
@@ -60,6 +57,7 @@ class Player(GameElement):
             return Projectile(
                 x = self.x + self.size / 4,
                 y = self.y + self.size / 4,
+                speed=30,
                 angle = 0
             )
         return None
