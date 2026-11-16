@@ -19,7 +19,7 @@ class GameElement(Sprite):
         self.image = pygame.transform.scale(self.image, (size, size))
 
         self.rect = self.image.get_rect()
-        self.rect.bottomright = (int(self.x), int(self.y))
+        self.rect.center = (int(self.x), int(self.y))
 
     def draw(self, surface: pygame.Surface) -> None:
         """

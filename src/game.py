@@ -15,9 +15,9 @@ class Game:
     GAMEOVER_COLOR = (230, 50, 50)
 
     ENEMY_TYPES = [
-        Charger(),
-        Bouncer(),
-        Shooter(),
+        #Charger(),
+        #Bouncer(),
+        #Shooter(),
         Exploder(),
     ]
 
@@ -68,6 +68,14 @@ class Game:
         if self.game_over:
             return
 
+        # Apparition des ennemis
+        self.counter += 1
+        if self.counter % self.enemy_interval == 0:
+            new_enemy = self.ENEMY_TYPES[random.randint(0, len(self.ENEMY_TYPES) - 1)].copy()
+            new_enemy.x = self.width + new_enemy.size / 2
+            new_enemy.y = random.randint(0 + int(new_enemy.size / 2), self.height - int(new_enemy.size / 2))
+            new_enemy.add(self.enemies)
+
         # Mouvement et tire du joueur
         self.player.update()
         for projectile in self.player.get_projectiles():
@@ -100,13 +108,6 @@ class Game:
                     for projectile in enemy.get_death_projectiles():
                         projectile.add(self.enemy_projectiles)
 
-        # Apparition des ennemis
-        self.counter += 1
-        if self.counter % self.enemy_interval == 0:
-            new_enemy = self.ENEMY_TYPES[random.randint(0, len(self.ENEMY_TYPES) - 1)].copy()
-            new_enemy.x = 1100 - new_enemy.size / 2
-            new_enemy.y = random.randint(0 + int(new_enemy.size / 2), 600 - int(new_enemy.size / 2))
-            new_enemy.add(self.enemies)
 
     def draw_game_over(self) -> None:
         """Affiche les messages de fin de partie à l'écran."""
@@ -115,7 +116,7 @@ class Game:
         self.window.blit(surface_titre, rect_titre)
 
         surface_instruction = self.font_subtitle.render(
-            "Appuyez sur ESC pour quitter", True, self.TEXT_COLOR
+            f"Score: {self.counter}", True, self.TEXT_COLOR
         )
         rect_instruction = surface_instruction.get_rect(center=(self.width // 2, self.height // 2 + 30))
         self.window.blit(surface_instruction, rect_instruction)

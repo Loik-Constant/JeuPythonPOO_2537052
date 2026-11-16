@@ -74,13 +74,14 @@ class Charger(Enemy):
             self.size,
             self.image_file,
             self.limits,
-            self.health
+            self.health,
+            self.speed
         )
 
     def update(self) -> None:
         self.x -= self.speed
-        self.destroy_offscreen()
 
+        self.destroy_offscreen()
         self.rect.center = (int(self.x), int(self.y))
 
     def get_projectiles(self) -> list[Projectile]:
@@ -97,22 +98,24 @@ class Bouncer(Enemy):
             self,
             x: float = 0,
             y: float = 0,
-            size: int = 50,
+            size: int = 65,
             image_file: str = 'images/bouncer.png',
             limits: tuple[int, int] = (1100, 600),
             health: int = 5,
             speed: int = 5,
+            angle_deviation = 45,
             rotation_interval: int = 5
     ):
         super().__init__(x, y, size, image_file, limits, health)
         self.speed = speed
-        self.angle = random.choice([135, 225])
+        self.angle_deviation = angle_deviation
+        self.initial_angle = 180 + random.choice([-self.angle_deviation, self.angle_deviation])
 
-        self.vx = math.cos(math.radians(self.angle))
-        self.vy = math.sin(math.radians(self.angle))
+        self.vx = math.cos(math.radians(self.initial_angle))
+        self.vy = math.sin(math.radians(self.initial_angle))
 
-        self.counter = 1
         self.rotation_interval = rotation_interval
+        self.counter = 1
 
     def copy(self) -> "Bouncer":
         return Bouncer(
@@ -123,10 +126,12 @@ class Bouncer(Enemy):
             self.limits,
             self.health,
             self.speed,
+            self.angle_deviation,
+            self.rotation_interval
         )
 
     def update(self) -> None:
-        if self.x < 0 + self.size / 2 or self.x > self.screen_width - self.size / 2:
+        if self.x < 0 + self.size / 2:
             self.vx *= -1
 
         if self.y < 0 + self.size / 2 or self.y > self.screen_height - self.size / 2:
@@ -140,6 +145,7 @@ class Bouncer(Enemy):
 
         self.counter += 1
 
+        self.destroy_offscreen()
         self.rect.center = (int(self.x), int(self.y))
 
     def get_projectiles(self) -> list[Projectile]:
@@ -159,18 +165,20 @@ class Shooter(Enemy):
             limits: tuple[int, int] = (1100, 600),
             health: int = 3,
             speed: int = 5,
-            fire_interval: int = 75
+            fire_interval: int = 75,
+            min_distance: int = 800,
+            max_distance: int = 1000
     ):
         super().__init__(x, y, size, image_file, limits, health)
         self.speed = speed
-        self.initial_direction = random.choice([-1, 1])
-        self.vy = speed * self.initial_direction
+        self.vy = speed * random.choice([-1, 1])
 
         self.fire_interval = fire_interval
         self.counter = 1
 
-        limits_x, limits_y = self.limits
-        self.end_point = limits_x - random.randint(100, 300)
+        self.min_distance = min_distance
+        self.max_distance = max_distance
+        self.end_point = random.randint(min_distance, max_distance)
 
     def copy(self) -> "Shooter":
         return Shooter(
@@ -181,6 +189,9 @@ class Shooter(Enemy):
             self.limits,
             self.health,
             self.speed,
+            self.fire_interval,
+            self.min_distance,
+            self.max_distance
         )
 
     def update(self) -> None:
@@ -221,10 +232,15 @@ class Exploder(Enemy):
             limits: tuple[int, int] = (1100, 600),
             health: int = 3,
             speed: int = 5,
+            projectile_amount: int = 8,
+            shake_intensity: int = 5
     ):
         super().__init__(x, y, size, image_file, limits, health)
         self.speed = speed
         self.initial_direction = random.choice([-1, 1])
+
+        self.projectile_amount = projectile_amount
+        self.shake_intensity = shake_intensity
 
         self.counter = 1
 
@@ -247,19 +263,22 @@ class Exploder(Enemy):
 
         self.destroy_offscreen()
         self.restrict_to_screen(False, True)
-        self.rect.center = (int(self.x) + random.randint(-5, 5), int(self.y) + random.randint(-5, 5))
+        self.rect.center = (
+            int(self.x) + random.randint(-self.shake_intensity, self.shake_intensity),
+            int(self.y) + random.randint(-self.shake_intensity, self.shake_intensity)
+        )
 
     def get_projectiles(self) -> list[Projectile]:
         return []
 
     def get_death_projectiles(self) -> list[Projectile]:
         projectiles = []
-        for x in range(8):
+        for i in range(self.projectile_amount):
             projectiles.append(Projectile(
                 x=self.x,
                 y=self.y,
-                angle=x * 45,
-                speed=5,
+                angle=i * int(360 / self.projectile_amount),
+                speed=8,
                 size=40,
                 image_file = 'images/spike.png',
             ))
