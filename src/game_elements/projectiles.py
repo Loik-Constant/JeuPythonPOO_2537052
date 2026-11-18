@@ -22,7 +22,7 @@ class Projectile(GameElement):
         self.angle = angle
         self.damage = damage
 
-        self.image = pygame.transform.rotate(self.image, random.randint(0, 360))
+        self.image = pygame.transform.rotate(self.image, -self.angle)
 
         self.vx = math.cos(math.radians(angle))
         self.vy = math.sin(math.radians(angle))
@@ -33,3 +33,5 @@ class Projectile(GameElement):
 
         self.destroy_offscreen()
         self.rect.center = (int(self.x), int(self.y))
+
+
