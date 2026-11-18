@@ -8,8 +8,12 @@ from game_elements.game_element import GameElement
 from game_elements.projectiles import Projectile
 
 
-class Enemy(GameElement, ABC):
-    """Représente un ennemi pouvant blesser le joueur. Cette classe doit être héritée."""
+class Enemy(GameElement):
+    """
+    Représente un ennemi pouvant blesser le joueur.
+
+    Cette classe est conçu pour être hérité.
+    """
 
     def __init__(
             self,
@@ -31,25 +35,38 @@ class Enemy(GameElement, ABC):
         """Retourne si l'ennemi est mort ou non"""
         return self.health <= 0
 
-    @abstractmethod
-    def copy(self):
-        """Retourne une copie de l'ennemi"""
-        pass
+    def copy(self) -> "Enemy":
+        """Retourne une copie de l'ennemi."""
+        return Enemy(
+            self.x,
+            self.y,
+            self.size,
+            self.image_file,
+            self.limits,
+            self.health
+        )
 
-    @abstractmethod
     def update(self) -> None:
         """Met à jour la position de l'ennemi."""
         pass
 
-    @abstractmethod
     def get_projectiles(self) -> list[Projectile]:
-        """Retourne les projectiles s'il est temps pour l'ennemi de tirer, sinon, ne retourne rien"""
-        pass
+        """
+        Retourne les projectiles s'il est temps pour l'ennemi de tirer, sinon, retourne un tableau vide
 
-    @abstractmethod
+        Cette méthode doit être redéfinie si l'ennemi tire des projectiles, sinon, l'implémentation par
+        défaut retourne un tableau vide
+        """
+        return []
+
     def get_death_projectiles(self) -> list[Projectile]:
-        """Retourne les projectiles tirés lors de la mort d'un ennemi"""
-        pass
+        """
+        Retourne les projectiles tirés lors de la mort d'un ennemi
+
+        Cette méthode doit être redéfinie si l'ennemi tire des projectiles lors de sa mort, sinon,
+        l'implémentation par défaut retourne un tableau vide
+        """
+        return []
 
 
 class Charger(Enemy):
@@ -85,12 +102,6 @@ class Charger(Enemy):
         self.destroy_offscreen()
         self.rect.center = (int(self.x), int(self.y))
 
-    def get_projectiles(self) -> list[Projectile]:
-        return []
-
-    def get_death_projectiles(self) -> list[Projectile]:
-        return []
-
 
 class Bouncer(Enemy):
     """Représente un ennemi qui rebondie sur les rebords de l'écran"""
@@ -104,7 +115,7 @@ class Bouncer(Enemy):
             limits: tuple[int, int] = (1100, 600),
             health: int = 5,
             speed: int = 5,
-            angle_deviation = 10,
+            angle_deviation = 45,
             rotation_interval: int = 5
     ):
         super().__init__(x, y, size, image_file, limits, health)
@@ -149,14 +160,10 @@ class Bouncer(Enemy):
         self.destroy_offscreen()
         self.rect.center = (int(self.x), int(self.y))
 
-    def get_projectiles(self) -> list[Projectile]:
-        return []
-
-    def get_death_projectiles(self) -> list[Projectile]:
-        return []
-
 
 class Shooter(Enemy):
+    """Ennemi qui se tient vers la droite de l'écran et tire des projectiles"""
+
     def __init__(
             self,
             x: float = 0,
@@ -219,11 +226,10 @@ class Shooter(Enemy):
             ))
         return projectiles
 
-    def get_death_projectiles(self) -> list[Projectile]:
-        return []
-
 
 class Exploder(Enemy):
+    """Ennemi qui se déplace en vague vers la gauche et explose lorsqu'il meurt"""
+
     def __init__(
             self,
             x: float = 0,
@@ -269,9 +275,6 @@ class Exploder(Enemy):
             int(self.x) + random.randint(-5, 5),
             int(self.y) + random.randint(-5, 5)
         )
-
-    def get_projectiles(self) -> list[Projectile]:
-        return []
 
     def get_death_projectiles(self) -> list[Projectile]:
         projectiles = []
