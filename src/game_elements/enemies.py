@@ -233,16 +233,17 @@ class Exploder(Enemy):
             limits: tuple[int, int] = (1100, 600),
             health: int = 3,
             speed: int = 5,
+            wave_length: int = 100,
+            wave_height: int = 5,
             projectile_amount: int = 8,
-            shake_intensity: int = 5
     ):
         super().__init__(x, y, size, image_file, limits, health)
         self.speed = speed
+        self.wave_size = wave_length
+        self.wave_height = wave_height
         self.initial_direction = random.choice([-1, 1])
 
         self.projectile_amount = projectile_amount
-        self.shake_intensity = shake_intensity
-
         self.counter = 1
 
     def copy(self) -> "Exploder":
@@ -254,21 +255,22 @@ class Exploder(Enemy):
             self.limits,
             self.health,
             self.speed,
+            self.wave_size,
+            self.wave_height,
             self.projectile_amount,
-            self.shake_intensity
         )
 
     def update(self) -> None:
         self.counter += 1
 
         self.x -= self.speed
-        self.y -= math.sin(self.counter / 20) * self.speed * self.initial_direction
+        self.y -= math.sin(self.x / self.wave_size) * self.wave_height * self.initial_direction
 
         self.destroy_offscreen()
         self.restrict_to_screen(False, True)
         self.rect.center = (
-            int(self.x) + random.randint(-self.shake_intensity, self.shake_intensity),
-            int(self.y) + random.randint(-self.shake_intensity, self.shake_intensity)
+            int(self.x) + random.randint(-5, 5),
+            int(self.y) + random.randint(-5, 5)
         )
 
     def get_projectiles(self) -> list[Projectile]:
