@@ -28,15 +28,20 @@ class Enemy(GameElement):
         self.health = health
 
     def take_damage(self) -> None:
-        """Réduit les points de vie de l'ennemi"""
+        """Réduit les points de vie de l'ennemi."""
         self.health -= 1
 
     def is_dead(self) -> bool:
-        """Retourne si l'ennemi est mort ou non"""
+        """Retourne si l'ennemi est mort ou non."""
         return self.health <= 0
 
     def copy(self) -> "Enemy":
-        """Retourne une copie de l'ennemi."""
+        """
+        Retourne une nouvelle instance de l'ennemi avec les mêmes paramètres lors de l'initialisation.
+
+        Cette méthode doit être redéfinie, sinon, l'implémentation par défaut retourne un ennemi
+        par défaut qui ne fait rien.
+        """
         return Enemy(
             self.x,
             self.y,
@@ -47,24 +52,28 @@ class Enemy(GameElement):
         )
 
     def update(self) -> None:
-        """Met à jour la position de l'ennemi."""
+        """
+        Met à jour la position de l'ennemi.
+
+        Cette méthode doit être redéfinie, sinon, l'implémentation par défaut ne fait rien.
+        """
         pass
 
     def get_projectiles(self) -> list[Projectile]:
         """
-        Retourne les projectiles s'il est temps pour l'ennemi de tirer, sinon, retourne un tableau vide
+        Retourne les projectiles s'il est temps pour l'ennemi de tirer, sinon, retourne un tableau vide.
 
         Cette méthode doit être redéfinie si l'ennemi tire des projectiles, sinon, l'implémentation par
-        défaut retourne un tableau vide
+        défaut retourne un tableau vide.
         """
         return []
 
     def get_death_projectiles(self) -> list[Projectile]:
         """
-        Retourne les projectiles tirés lors de la mort d'un ennemi
+        Retourne les projectiles tirés lors de la mort d'un ennemi.
 
         Cette méthode doit être redéfinie si l'ennemi tire des projectiles lors de sa mort, sinon,
-        l'implémentation par défaut retourne un tableau vide
+        l'implémentation par défaut retourne un tableau vide.
         """
         return []
 
