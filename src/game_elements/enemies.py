@@ -79,7 +79,10 @@ class Enemy(GameElement):
 
 
 class Charger(Enemy):
-    """Représente un ennemi qui charge vers l'avant"""
+    """
+    Représente un ennemi qui charge vers l'avant et tire des projectiles derrière lui une fois la
+    gauche de l'écran atteinte.
+    """
 
     def __init__(
             self,
@@ -88,11 +91,15 @@ class Charger(Enemy):
             size: int = 50,
             image_file: str = 'images/charger.png',
             limits: tuple[int, int] = (1100, 600),
-            health: int = 3,
-            speed: int = 10
+            health: int = 2,
+            speed: int = 10,
+            projectile_amount: int = 2,
+            projectile_spread: float = 30
     ):
         super().__init__(x, y, size, image_file, limits, health)
         self.speed = speed
+        self.projectile_amount = projectile_amount
+        self.projectile_spread = projectile_spread
 
     def copy(self) -> "Charger":
         return Charger(
@@ -102,14 +109,30 @@ class Charger(Enemy):
             self.image_file,
             self.limits,
             self.health,
-            self.speed
+            self.speed,
+            self.projectile_amount,
+            self.projectile_spread
         )
 
     def update(self) -> None:
         self.x -= self.speed
 
-        self.destroy_offscreen()
         self.rect.center = (int(self.x), int(self.y))
+
+    def get_projectiles(self) -> list[Projectile]:
+        projectiles = []
+        if self.x < 0 - self.size / 2:
+            self.kill()
+            for i in range(self.projectile_amount):
+                projectiles.append(Projectile(
+                    x=self.x + self.size,
+                    y=self.y,
+                    angle=((self.projectile_spread / 2) - (self.projectile_spread / (self.projectile_amount - 1) * i)),
+                    speed=8,
+                    size=25,
+                    image_file='images/blood.png',
+                ))
+        return projectiles
 
 
 class Bouncer(Enemy):
@@ -171,7 +194,7 @@ class Bouncer(Enemy):
 
 
 class Shooter(Enemy):
-    """Ennemi qui se tient vers la droite de l'écran et tire des projectiles"""
+    """Représente un ennemi qui se tient vers la droite de l'écran et tire des projectiles"""
 
     def __init__(
             self,
@@ -237,7 +260,7 @@ class Shooter(Enemy):
 
 
 class Exploder(Enemy):
-    """Ennemi qui se déplace en vague vers la gauche et explose lorsqu'il meurt"""
+    """Représente un ennemi qui se déplace en vague vers la gauche et explose lorsqu'il meurt"""
 
     def __init__(
             self,
