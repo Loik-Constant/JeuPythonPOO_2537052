@@ -104,7 +104,7 @@ class Bouncer(Enemy):
             limits: tuple[int, int] = (1100, 600),
             health: int = 5,
             speed: int = 5,
-            angle_deviation = 45,
+            angle_deviation = 10,
             rotation_interval: int = 5
     ):
         super().__init__(x, y, size, image_file, limits, health)
@@ -239,12 +239,11 @@ class Exploder(Enemy):
     ):
         super().__init__(x, y, size, image_file, limits, health)
         self.speed = speed
-        self.wave_size = wave_length
+        self.wave_length = wave_length
         self.wave_height = wave_height
         self.initial_direction = random.choice([-1, 1])
 
         self.projectile_amount = projectile_amount
-        self.counter = 1
 
     def copy(self) -> "Exploder":
         return Exploder(
@@ -255,16 +254,14 @@ class Exploder(Enemy):
             self.limits,
             self.health,
             self.speed,
-            self.wave_size,
+            self.wave_length,
             self.wave_height,
             self.projectile_amount,
         )
 
     def update(self) -> None:
-        self.counter += 1
-
         self.x -= self.speed
-        self.y -= math.sin(self.x / self.wave_size) * self.wave_height * self.initial_direction
+        self.y -= math.sin(self.x / self.wave_length) * self.wave_height * self.initial_direction
 
         self.destroy_offscreen()
         self.restrict_to_screen(False, True)
