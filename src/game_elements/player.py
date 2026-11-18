@@ -6,7 +6,7 @@ from game_elements.projectiles import Projectile
 
 
 class Player(GameElement):
-    """Représente le carré contrôlé par l'utilisateur au clavier."""
+    """Représente le carré contrôlé par l'utilisateur à la souris."""
 
     def __init__(
             self,
@@ -16,12 +16,21 @@ class Player(GameElement):
             image_file: str = 'images/isook.png',
             limits: tuple[int, int] = (1100, 600),
             speed: float = 30.0,
-            fire_interval: int = 10
+            fire_interval: int = 10,
+            health: int = 3,
+            invincibility_duration: int = 50
     ):
         super().__init__(x, y, size, image_file, limits)
         self.speed = speed
         self.fire_interval = fire_interval
         self.counter = 1
+
+        self.health = health
+        self.power_ups = []
+
+        self.invincibility_duration = invincibility_duration
+        self.invincibility_timer = invincibility_duration
+
 
     def update(self) -> None:
         """Met à jour la position du joueur en fonction de la position de la souris."""
@@ -44,6 +53,12 @@ class Player(GameElement):
         self.restrict_to_screen(True, True)
         self.rect.center = (int(self.x), int(self.y))
 
+        if self.invincibility_timer < self.invincibility_duration:
+            self.invincibility_timer += 1
+            self.image.set_alpha(75)
+        else:
+            self.image.set_alpha(255)
+
         self.counter += 1
 
     def get_projectiles(self) -> list[Projectile]:
@@ -57,3 +72,17 @@ class Player(GameElement):
                 angle = 0
             ))
         return projectiles
+
+    def take_damage(self) -> None:
+        """Réduit les points de vies du joueur s'il n'est pas invincible"""
+        if self.invincibility_timer == self.invincibility_duration:
+            self.health -= 1
+            self.invincibility_timer = 0
+
+    def heal(self) -> None:
+        """Augmente les points de vies du joueur"""
+        self.health += 1
+
+    def is_dead(self) -> bool:
+        """Retourne si le joueur est mort ou non"""
+        return self.health <= 0

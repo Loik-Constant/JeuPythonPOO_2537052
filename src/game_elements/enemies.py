@@ -16,7 +16,7 @@ class Enemy(GameElement, ABC):
             x: float = 0,
             y: float = 0,
             size: int = 40,
-            image_file: str = 'images/isook.png',
+            image_file: str = 'images/isook_old.png',
             limits: tuple[int, int] = (1100, 600),
             health: int = 3
     ):
@@ -27,8 +27,9 @@ class Enemy(GameElement, ABC):
         """Réduit les points de vie de l'ennemi"""
         self.health -= 1
 
-        if self.health <= 0:
-            self.kill()
+    def is_dead(self) -> bool:
+        """Retourne si l'ennemi est mort ou non"""
+        return self.health <= 0
 
     @abstractmethod
     def copy(self):
@@ -165,13 +166,13 @@ class Shooter(Enemy):
             limits: tuple[int, int] = (1100, 600),
             health: int = 3,
             speed: int = 5,
-            fire_interval: int = 75,
+            fire_interval: int = 50,
             min_distance: int = 800,
             max_distance: int = 1000
     ):
         super().__init__(x, y, size, image_file, limits, health)
         self.speed = speed
-        self.vy = speed * random.choice([-1, 1])
+        self.direction = speed * random.choice([-1, 1])
 
         self.fire_interval = fire_interval
         self.counter = 1
@@ -198,9 +199,9 @@ class Shooter(Enemy):
         if self.x > self.end_point:
             self.x -= self.speed
         else:
-            self.y += self.vy
+            self.y += self.speed
             if self.y < 0 + self.size / 2 or self.y > self.screen_height - self.size / 2:
-                self.vy *= -1
+                self.speed *= -1
 
             self.counter += 1
 
@@ -253,6 +254,8 @@ class Exploder(Enemy):
             self.limits,
             self.health,
             self.speed,
+            self.projectile_amount,
+            self.shake_intensity
         )
 
     def update(self) -> None:
@@ -277,7 +280,7 @@ class Exploder(Enemy):
             projectiles.append(Projectile(
                 x=self.x,
                 y=self.y,
-                angle=i * int(360 / self.projectile_amount),
+                angle=i * float(360 / self.projectile_amount),
                 speed=8,
                 size=40,
                 image_file = 'images/spike.png',
