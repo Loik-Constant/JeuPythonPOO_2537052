@@ -1,5 +1,6 @@
 import math
 import random
+from abc import ABC, abstractmethod
 
 import pygame
 
@@ -7,7 +8,7 @@ from game_elements.game_element import GameElement
 from game_elements.projectiles import Projectile
 
 
-class Enemy(GameElement):
+class Enemy(GameElement, ABC):
     """
     Représente un ennemi pouvant blesser le joueur.
 
@@ -34,27 +35,21 @@ class Enemy(GameElement):
         """Retourne si l'ennemi est mort ou non."""
         return self.health <= 0
 
+    @abstractmethod
     def copy(self) -> "Enemy":
         """
         Retourne une nouvelle instance de l'ennemi avec les mêmes paramètres lors de l'initialisation.
 
-        Cette méthode doit être redéfinie, sinon, l'implémentation par défaut retourne un ennemi
-        par défaut qui ne fait rien.
+        Cette méthode doit être redéfinie.
         """
-        return Enemy(
-            self.x,
-            self.y,
-            self.size,
-            self.image_file,
-            self.limits,
-            self.health
-        )
+        pass
 
+    @abstractmethod
     def update(self) -> None:
         """
         Met à jour la position de l'ennemi.
 
-        Cette méthode doit être redéfinie, sinon, l'implémentation par défaut ne fait rien.
+        Cette méthode doit être redéfinie.
         """
         pass
 
