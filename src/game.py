@@ -15,10 +15,10 @@ class Game:
     GAMEOVER_COLOR = (230, 50, 50)
 
     ENEMY_TYPES = [
-        #Charger(),
-        #Bouncer(),
-        #Shooter(),
-        #Exploder(),
+        Charger(),
+        Bouncer(),
+        Shooter(),
+        Exploder(),
     ]
 
     def __init__(self, width: int = 1100, height: int = 600, fps: int = 60):
@@ -83,6 +83,7 @@ class Game:
                 new_enemy.x = self.width + new_enemy.size / 2
                 new_enemy.y = random.randint(0 + int(new_enemy.size / 2), self.height - int(new_enemy.size / 2))
                 new_enemy.limits = self.width, self.height
+                new_enemy.screen_width, new_enemy.screen_height = new_enemy.limits
                 new_enemy.add(self.enemies)
 
         # Mouvement et tire du joueur
