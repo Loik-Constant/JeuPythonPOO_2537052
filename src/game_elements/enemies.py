@@ -1,6 +1,5 @@
 import math
 import random
-from abc import ABC, abstractmethod
 
 import pygame
 
@@ -20,7 +19,7 @@ class Enemy(GameElement):
             x: float = 0,
             y: float = 0,
             size: int = 40,
-            image_file: str = 'images/isook_old.png',
+            image_file: str = 'images/isook.png',
             limits: tuple[int, int] = (1100, 600),
             health: int = 3
     ):
@@ -125,12 +124,13 @@ class Charger(Enemy):
             self.kill()
             for i in range(self.projectile_amount):
                 projectiles.append(Projectile(
-                    x=self.x + self.size,
+                    x=0,
                     y=self.y,
                     angle=((self.projectile_spread / 2) - (self.projectile_spread / (self.projectile_amount - 1) * i)),
                     speed=8,
                     size=25,
                     image_file='images/blood.png',
+                    limits=self.limits
                 ))
         return projectiles
 
@@ -218,7 +218,7 @@ class Shooter(Enemy):
 
         self.min_distance = min_distance
         self.max_distance = max_distance
-        self.end_point = random.randint(min_distance, max_distance)
+        self.end_point = random.randint(self.min_distance, self.max_distance)
 
     def copy(self) -> "Shooter":
         return Shooter(
@@ -254,7 +254,8 @@ class Shooter(Enemy):
                 y=self.y,
                 speed=10,
                 angle=180,
-                image_file='images/blood.png'
+                image_file='images/blood.png',
+                limits=self.limits
             ))
         return projectiles
 
@@ -318,5 +319,6 @@ class Exploder(Enemy):
                 speed=8,
                 size=40,
                 image_file = 'images/spike.png',
+                limits=self.limits
             ))
         return projectiles
