@@ -18,7 +18,7 @@ class Game:
         #Charger(),
         #Bouncer(),
         #Shooter(),
-        Exploder(),
+        #Exploder(),
     ]
 
     def __init__(self, width: int = 1100, height: int = 600, fps: int = 60):
@@ -32,7 +32,7 @@ class Game:
         self.clock = pygame.time.Clock()
 
         self.counter = 1
-        self.enemy_interval = 85
+        self.enemy_interval = 75
 
         # Polices
         self.font_title = pygame.font.Font(None, 64)
@@ -44,11 +44,18 @@ class Game:
             x=(self.width - 50) // 4,
             y=(self.height - 50) // 2,
             size=50,
-            limits=limits,
+            limits=limits
         )
         self.player_projectiles = Group()
         self.enemies = Group()
         self.enemy_projectiles = Group()
+
+        # Chargement des icônes pour l'interface
+        self.image_health_icon = pygame.image.load("images/heart_icon.png")
+        self.image_health_icon = pygame.transform.scale(self.image_health_icon, (40, 40))
+
+        self.image_timer_icon = pygame.image.load("images/timer_icon.png")
+        self.image_timer_icon = pygame.transform.scale(self.image_timer_icon, (40, 40))
 
         # État du jeu
         self.running = True
@@ -71,10 +78,12 @@ class Game:
         # Apparition des ennemis
         self.counter += 1
         if self.counter % self.enemy_interval == 0:
-            new_enemy = self.ENEMY_TYPES[random.randint(0, len(self.ENEMY_TYPES) - 1)].copy()
-            new_enemy.x = self.width + new_enemy.size / 2
-            new_enemy.y = random.randint(0 + int(new_enemy.size / 2), self.height - int(new_enemy.size / 2))
-            new_enemy.add(self.enemies)
+            if len(self.ENEMY_TYPES) > 0:
+                new_enemy = self.ENEMY_TYPES[random.randint(0, len(self.ENEMY_TYPES) - 1)].copy()
+                new_enemy.x = self.width + new_enemy.size / 2
+                new_enemy.y = random.randint(0 + int(new_enemy.size / 2), self.height - int(new_enemy.size / 2))
+                new_enemy.limits = self.width, self.height
+                new_enemy.add(self.enemies)
 
         # Mouvement et tire du joueur
         self.player.update()
@@ -93,21 +102,26 @@ class Game:
         # Collision du joueur avec les ennemis/projectiles
         for enemy in self.enemies:
             if self.player.is_touching(enemy):
-                self.game_over = True
+                self.player.take_damage()
+                self.draw_ui()
 
         for enemy_projectile in self.enemy_projectiles:
             if self.player.is_touching(enemy_projectile):
-                self.game_over = True
+                self.player.take_damage()
+                self.draw_ui()
+
+        if self.player.is_dead():
+            self.game_over = True
 
         # Collision des ennemis avec les projectiles du joueur
         hit_enemies = pygame.sprite.groupcollide(self.enemies, self.player_projectiles, False, True)
         for enemy in hit_enemies:
             if isinstance(enemy, Enemy):
                 enemy.take_damage()
-                if enemy.health <= 0:
+                if enemy.is_dead():
+                    enemy.kill()
                     for projectile in enemy.get_death_projectiles():
                         projectile.add(self.enemy_projectiles)
-
 
     def draw_game_over(self) -> None:
         """Affiche les messages de fin de partie à l'écran."""
@@ -121,6 +135,22 @@ class Game:
         rect_instruction = surface_instruction.get_rect(center=(self.width // 2, self.height // 2 + 30))
         self.window.blit(surface_instruction, rect_instruction)
 
+    def draw_ui(self) -> None:
+        """Affiche les points de vies du joueur et le temps de survie du joueur"""
+        surface_health = self.font_title.render(f"x{str(self.player.health)}", True, self.TEXT_COLOR)
+        rect_health = surface_health.get_rect(midleft=(self.width // 2, self.height - 30))
+        self.window.blit(surface_health, rect_health)
+
+        rect_health_icon = self.image_health_icon.get_rect(midright=(self.width // 2, self.height - 30))
+        self.window.blit(self.image_health_icon, rect_health_icon)
+
+        surface_timer = self.font_title.render(str(self.counter), True, self.TEXT_COLOR)
+        rect_timer = surface_timer.get_rect(midleft=(self.width // 2, 30))
+        self.window.blit(surface_timer, rect_timer)
+
+        rect_timer_icon = self.image_health_icon.get_rect(midright=(self.width // 2, 30))
+        self.window.blit(self.image_timer_icon, rect_timer_icon)
+
     def draw(self) -> None:
         """Effectue le rendu graphique complet d'une trame."""
         self.window.fill(self.BACKGROUND_COLOR)
@@ -133,6 +163,8 @@ class Game:
 
         if self.game_over:
             self.draw_game_over()
+        else:
+            self.draw_ui()
 
         pygame.display.flip()
 
