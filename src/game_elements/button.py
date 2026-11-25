@@ -42,13 +42,13 @@ class Button:
         """
         red, green, blue = self.btn_color
         if self.hovered():
-            red -= 10
-            green -= 10
-            blue -= 10
+            red = red / 100 * 85
+            green = green / 100 * 85
+            blue = blue / 100 * 85
             if pygame.mouse.get_pressed(num_buttons=3)[0]:
-                red -= 10
-                green -= 10
-                blue -= 10
+                red = red / 100 * 70
+                green = green / 100 * 70
+                blue = blue / 100 * 70
 
         pygame.draw.rect(surface,
                          (red, green, blue),
