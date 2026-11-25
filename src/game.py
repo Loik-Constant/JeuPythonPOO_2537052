@@ -20,16 +20,30 @@ class Game:
     TEXT_COLOR = (255, 255, 255)
     GAMEOVER_COLOR = (230, 50, 50)
 
+    PLAYER_HEALTH = 3
 
     ENEMY_LISTS = [
         {
             "name": "Easy",
             "enemies": [
-                Charger(),
-                Bouncer(),
-                Shooter(),
+                Charger(
+                    speed=7,
+                    projectile_amount=1,
+                    projectile_spread=0
+                ),
+                Bouncer(
+                    speed=4,
+                    health=3,
+                    angle_deviation=30
+                ),
+                Shooter(
+                    fire_interval=75,
+                    speed=4
+                ),
                 Exploder(
-                    projectile_amount=4
+                    speed=4,
+                    wave_height=3,
+                    projectile_amount=6
                 ),
             ]
         },
@@ -45,10 +59,25 @@ class Game:
         {
             "name": "Hard",
             "enemies": [
-                Charger(),
-                Bouncer(),
-                Shooter(),
-                Exploder(),
+                Charger(
+                    speed=13,
+                    projectile_amount=3,
+                    projectile_spread=45
+                ),
+                Bouncer(
+                    speed=6,
+                    health=6,
+                    angle_deviation=60
+                ),
+                Shooter(
+                    fire_interval=35,
+                    speed=6
+                ),
+                Exploder(
+                    wave_height=7,
+                    wave_length=75,
+                    projectile_amount=12
+                ),
             ]
         }
     ]
@@ -77,10 +106,11 @@ class Game:
         # Entités
         limits = (self.width, self.height)
         self.player = Player(
-            x=(self.width - 50) // 4,
-            y=(self.height - 50) // 2,
+            x=self.width // 4,
+            y=self.height // 2,
             size=50,
-            limits=limits
+            limits=limits,
+            health=self.PLAYER_HEALTH
         )
         self.player_projectiles = Group()
         self.enemies = Group()
@@ -108,10 +138,15 @@ class Game:
             Button(
                 x=int((self.width / len(self.ENEMY_LISTS) * i) + (self.width / len(self.ENEMY_LISTS) / 2)),
                 y=self.height // 2 + 50,
-                text=str(self.ENEMY_LISTS[i]["name"]),
-                btn_color=(32,25,255)
+                text=str(self.ENEMY_LISTS[i]["name"])
             ) for i in range(len(self.ENEMY_LISTS))
         ]
+
+        self.restart_button = Button(
+            x=self.width // 2,
+            y=self.height - 50,
+            text="Try again"
+        )
 
         # État du jeu
         self.running = True
@@ -137,6 +172,10 @@ class Game:
                     self.level_select = False
             return
         elif self.game_over:
+            if self.restart_button.clicked():
+                self.level_select = True
+                self.game_over = False
+                self.reset_game_state()
             return
 
         # Apparition des ennemis
@@ -188,6 +227,18 @@ class Game:
                     for projectile in enemy.get_death_projectiles():
                         projectile.add(self.enemy_projectiles)
 
+    def reset_game_state(self) -> None:
+        self.player.x = self.width // 4
+        self.player.y = self.height // 2
+        self.player.health = self.PLAYER_HEALTH
+        self.player.invincibility_timer = 0
+
+        self.counter = 0
+
+        self.player_projectiles.empty()
+        self.enemies.empty()
+        self.enemy_projectiles.empty()
+
     def draw_game_over(self) -> None:
         """Affiche les messages de fin de partie à l'écran."""
         surface_game_over = self.font_title.render("GAME OVER", True, self.GAMEOVER_COLOR)
@@ -199,6 +250,8 @@ class Game:
         )
         rect_score = surface_score.get_rect(center=(self.width // 2, self.height // 2 + 30))
         self.window.blit(surface_score, rect_score)
+
+        self.restart_button.draw(self.window)
 
     def draw_ui(self) -> None:
         """Affiche les points de vies du joueur et le temps de survie du joueur"""
@@ -218,7 +271,7 @@ class Game:
 
     def draw_level_select(self) -> None:
         """Affiche les points de vies du joueur et le temps de survie du joueur"""
-        surface_health = self.font_title.render("Choisissez une difficulté", True, self.TEXT_COLOR)
+        surface_health = self.font_title.render("Choose a difficulty", True, self.TEXT_COLOR)
         rect_health = surface_health.get_rect(center=(self.width // 2, self.height // 2 - 50))
         self.window.blit(surface_health, rect_health)
 
