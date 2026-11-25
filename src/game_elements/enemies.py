@@ -121,7 +121,7 @@ class Charger(Enemy):
                 projectiles.append(Projectile(
                     x=0,
                     y=self.y,
-                    angle=((self.projectile_spread / 2) - (self.projectile_spread / (self.projectile_amount - 1) * i)),
+                    angle=((self.projectile_spread / 2) - (self.projectile_spread / max(1, (self.projectile_amount - 1)) * i)),
                     speed=8,
                     size=25,
                     image_file='images/blood.png',
