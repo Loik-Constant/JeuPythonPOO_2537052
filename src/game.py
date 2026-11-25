@@ -1,9 +1,15 @@
+import math
 import random
 import sys
+
 import pygame
+from pygame.font import Font
 
 from pygame.sprite import Group
+
+from game_elements.button import Button
 from game_elements.enemies import Enemy, Charger, Bouncer, Shooter, Exploder
+from game_elements.game_element import GameElement
 from game_elements.player import Player
 
 
@@ -14,11 +20,37 @@ class Game:
     TEXT_COLOR = (255, 255, 255)
     GAMEOVER_COLOR = (230, 50, 50)
 
-    ENEMY_TYPES = [
-        Charger(),
-        Bouncer(),
-        Shooter(),
-        Exploder(),
+
+    ENEMY_LISTS = [
+        {
+            "name": "Easy",
+            "enemies": [
+                Charger(),
+                Bouncer(),
+                Shooter(),
+                Exploder(
+                    projectile_amount=4
+                ),
+            ]
+        },
+        {
+            "name": "Normal",
+            "enemies": [
+                Charger(),
+                Bouncer(),
+                Shooter(),
+                Exploder(),
+            ]
+        },
+        {
+            "name": "Hard",
+            "enemies": [
+                Charger(),
+                Bouncer(),
+                Shooter(),
+                Exploder(),
+            ]
+        }
     ]
 
     def __init__(self, width: int = 1100, height: int = 600, fps: int = 60):
@@ -35,8 +67,12 @@ class Game:
         self.enemy_interval = 75
 
         # Polices
-        self.font_title = pygame.font.Font(None, 64)
-        self.font_subtitle = pygame.font.Font(None, 32)
+        self.font_title = Font(None, 64)
+        self.font_subtitle = Font(None, 32)
+
+        # Difficulté et types d'ennemis
+        self.difficulty = 0
+        self.enemy_types = self.ENEMY_LISTS[0]["enemies"]
 
         # Entités
         limits = (self.width, self.height)
@@ -51,14 +87,35 @@ class Game:
         self.enemy_projectiles = Group()
 
         # Chargement des icônes pour l'interface
-        self.image_health_icon = pygame.image.load("images/heart_icon.png")
-        self.image_health_icon = pygame.transform.scale(self.image_health_icon, (40, 40))
+        self.health_icon = GameElement(
+            x=0,
+            y=0,
+            size=40,
+            image_file="images/heart_icon.png",
+            limits = limits
+        )
 
-        self.image_timer_icon = pygame.image.load("images/timer_icon.png")
-        self.image_timer_icon = pygame.transform.scale(self.image_timer_icon, (40, 40))
+        self.timer_icon = GameElement(
+            x=0,
+            y=0,
+            size=40,
+            image_file="images/timer_icon.png",
+            limits=limits
+        )
+
+        # Boutons
+        self.difficulty_buttons = [
+            Button(
+                x=int((self.width / len(self.ENEMY_LISTS) * i) + (self.width / len(self.ENEMY_LISTS) / 2)),
+                y=self.height // 2 + 50,
+                text=str(self.ENEMY_LISTS[i]["name"]),
+                btn_color=(32,25,255)
+            ) for i in range(len(self.ENEMY_LISTS))
+        ]
 
         # État du jeu
         self.running = True
+        self.level_select = True
         self.game_over = False
 
     def handle_events(self) -> None:
@@ -72,14 +129,21 @@ class Game:
 
     def update(self) -> None:
         """Met à jour l'état logique de la partie."""
-        if self.game_over:
+        if self.level_select:
+            for i in range(len(self.ENEMY_LISTS)):
+                if self.difficulty_buttons[i].clicked():
+                    self.difficulty = i
+                    self.enemy_types = self.ENEMY_LISTS[i]["enemies"]
+                    self.level_select = False
+            return
+        elif self.game_over:
             return
 
         # Apparition des ennemis
         self.counter += 1
         if self.counter % self.enemy_interval == 0:
-            if len(self.ENEMY_TYPES) > 0:
-                new_enemy = self.ENEMY_TYPES[random.randint(0, len(self.ENEMY_TYPES) - 1)].copy()
+            if len(self.enemy_types) > 0:
+                new_enemy = self.enemy_types[random.randint(0, len(self.enemy_types) - 1)].copy()
                 new_enemy.x = self.width + new_enemy.size / 2
                 new_enemy.y = random.randint(0 + int(new_enemy.size / 2), self.height - int(new_enemy.size / 2))
                 new_enemy.limits = self.width, self.height
@@ -126,15 +190,15 @@ class Game:
 
     def draw_game_over(self) -> None:
         """Affiche les messages de fin de partie à l'écran."""
-        surface_titre = self.font_title.render("GAME OVER", True, self.GAMEOVER_COLOR)
-        rect_titre = surface_titre.get_rect(center=(self.width // 2, self.height // 2 - 30))
-        self.window.blit(surface_titre, rect_titre)
+        surface_game_over = self.font_title.render("GAME OVER", True, self.GAMEOVER_COLOR)
+        rect_game_over = surface_game_over.get_rect(center=(self.width // 2, self.height // 2 - 30))
+        self.window.blit(surface_game_over, rect_game_over)
 
-        surface_instruction = self.font_subtitle.render(
+        surface_score = self.font_subtitle.render(
             f"Score: {self.counter}", True, self.TEXT_COLOR
         )
-        rect_instruction = surface_instruction.get_rect(center=(self.width // 2, self.height // 2 + 30))
-        self.window.blit(surface_instruction, rect_instruction)
+        rect_score = surface_score.get_rect(center=(self.width // 2, self.height // 2 + 30))
+        self.window.blit(surface_score, rect_score)
 
     def draw_ui(self) -> None:
         """Affiche les points de vies du joueur et le temps de survie du joueur"""
@@ -142,29 +206,39 @@ class Game:
         rect_health = surface_health.get_rect(midleft=(self.width // 2, self.height - 30))
         self.window.blit(surface_health, rect_health)
 
-        rect_health_icon = self.image_health_icon.get_rect(midright=(self.width // 2, self.height - 30))
-        self.window.blit(self.image_health_icon, rect_health_icon)
+        self.health_icon.rect.midright = (self.width // 2, self.height - 30)
+        self.health_icon.draw(self.window)
 
         surface_timer = self.font_title.render(str(self.counter), True, self.TEXT_COLOR)
         rect_timer = surface_timer.get_rect(midleft=(self.width // 2, 30))
         self.window.blit(surface_timer, rect_timer)
 
-        rect_timer_icon = self.image_health_icon.get_rect(midright=(self.width // 2, 30))
-        self.window.blit(self.image_timer_icon, rect_timer_icon)
+        self.timer_icon.rect.midright = (self.width // 2, 30)
+        self.timer_icon.draw(self.window)
+
+    def draw_level_select(self) -> None:
+        """Affiche les points de vies du joueur et le temps de survie du joueur"""
+        surface_health = self.font_title.render("Choisissez une difficulté", True, self.TEXT_COLOR)
+        rect_health = surface_health.get_rect(center=(self.width // 2, self.height // 2 - 50))
+        self.window.blit(surface_health, rect_health)
+
+        for button in self.difficulty_buttons:
+            button.draw(self.window)
 
     def draw(self) -> None:
         """Effectue le rendu graphique complet d'une trame."""
         self.window.fill(self.BACKGROUND_COLOR)
 
-        # Dessin des entités
-        self.player.draw(self.window)
-        self.player_projectiles.draw(self.window)
-        self.enemies.draw(self.window)
-        self.enemy_projectiles.draw(self.window)
-
-        if self.game_over:
+        if self.level_select:
+            self.draw_level_select()
+        elif self.game_over:
             self.draw_game_over()
         else:
+            self.player.draw(self.window)
+            self.player_projectiles.draw(self.window)
+            self.enemies.draw(self.window)
+            self.enemy_projectiles.draw(self.window)
+
             self.draw_ui()
 
         pygame.display.flip()
