@@ -1,4 +1,5 @@
 import pygame
+from pygame import Surface, Rect
 
 from pygame.sprite import Sprite
 
@@ -15,13 +16,10 @@ class GameElement(Sprite):
         self.screen_width, self.screen_height = limits
         self.limits = limits
 
-        self.image = pygame.image.load(image_file)
-        self.image = pygame.transform.scale(self.image, (size, size))
-
-        self.rect = self.image.get_rect()
+        self.image, self.rect = self.load_png()
         self.rect.center = (int(self.x), int(self.y))
 
-    def draw(self, surface: pygame.Surface) -> None:
+    def draw(self, surface: Surface) -> None:
         """
         Affiche le carré sur la surface spécifiée.
 
@@ -53,9 +51,18 @@ class GameElement(Sprite):
         self.rect.center = (int(self.x), int(self.y))
 
     def destroy_offscreen(self) -> None:
-        """Détruit l'élément s'il sort de la fenêtre de jeu"""
+        """Détruit l'élément s'il sort de la fenêtre de jeu."""
         if self.x < 0 - self.size / 2 or self.x > self.screen_width + self.size / 2:
             self.kill()
 
         if self.y < 0 - self.size / 2 or self.y > self.screen_height + self.size / 2:
             self.kill()
+
+    def load_png(self) -> tuple[Surface, Rect]:
+        """Retourne une image et un rectangle selon le fichier .png associé à l'objet"""
+        try:
+            image = pygame.image.load(self.image_file)
+            image = pygame.transform.scale(image, (self.size, self.size))
+        except FileNotFoundError:
+            image = Surface((self.size, self.size))
+        return image, image.get_rect()
