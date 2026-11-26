@@ -24,7 +24,7 @@ class Game:
 
     MAX_ENEMY_INTERVAL = 100
     MIN_ENEMY_INTERVAL = 30
-    SPAWN_INCREASE_INTERVAL = 250
+    SPAWN_INCREASE_INTERVAL = 1
 
     ENEMY_LISTS = [
         {
@@ -270,6 +270,7 @@ class Game:
         self.player.invincibility_timer = 0
 
         self.counter = 0
+        self.enemy_interval = self.MAX_ENEMY_INTERVAL
 
         self.player_projectiles.empty()
         self.enemies.empty()
