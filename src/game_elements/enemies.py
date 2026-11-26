@@ -206,7 +206,7 @@ class Shooter(Enemy):
     ):
         super().__init__(x, y, size, image_file, limits, health)
         self.speed = speed
-        self.direction = speed * random.choice([-1, 1])
+        self.direction = random.choice([-1, 1])
 
         self.fire_interval = fire_interval
         self.counter = 1
@@ -233,7 +233,7 @@ class Shooter(Enemy):
         if self.x > self.end_point:
             self.x -= self.speed
         else:
-            self.y += self.speed
+            self.y += self.speed * self.direction
             if self.y < 0 + self.size / 2 or self.y > self.screen_height - self.size / 2:
                 self.speed *= -1
 
