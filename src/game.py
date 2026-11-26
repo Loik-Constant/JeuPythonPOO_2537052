@@ -16,11 +16,15 @@ from game_elements.player import Player
 class Game:
     """Moteur principal orchestrant la boucle de jeu, les entités et l'affichage."""
 
-    BACKGROUND_COLOR = (30, 60, 30)
+    BACKGROUND_COLOR = (60, 60, 60)
     TEXT_COLOR = (255, 255, 255)
     GAMEOVER_COLOR = (230, 50, 50)
 
     PLAYER_HEALTH = 3
+
+    MAX_ENEMY_INTERVAL = 100
+    MIN_ENEMY_INTERVAL = 30
+    SPAWN_INCREASE_INTERVAL = 250
 
     ENEMY_LISTS = [
         {
@@ -79,6 +83,31 @@ class Game:
                     projectile_amount=12
                 ),
             ]
+        },
+        {
+            "name": "Impossible",
+            "enemies": [
+                Charger(
+                    speed=15,
+                    projectile_amount=6,
+                    projectile_spread=75
+                ),
+                Bouncer(
+                    speed=8,
+                    health=8,
+                    angle_deviation=75
+                ),
+                Shooter(
+                    fire_interval=25,
+                    speed=7
+                ),
+                Exploder(
+
+                    wave_height=12,
+                    wave_length=75,
+                    projectile_amount=16
+                ),
+            ]
         }
     ]
 
@@ -92,16 +121,18 @@ class Game:
         pygame.display.set_caption("pew pew game")
         self.clock = pygame.time.Clock()
 
-        self.counter = 1
-        self.enemy_interval = 75
+
 
         # Polices
         self.font_title = Font(None, 64)
         self.font_subtitle = Font(None, 32)
 
-        # Difficulté et types d'ennemis
+        # Gestion d'apparition d'ennemis
         self.difficulty = 0
-        self.enemy_types = self.ENEMY_LISTS[0]["enemies"]
+        self.enemy_types = []
+
+        self.counter = 1
+        self.enemy_interval = self.MAX_ENEMY_INTERVAL
 
         # Entités
         limits = (self.width, self.height)
@@ -180,6 +211,11 @@ class Game:
 
         # Apparition des ennemis
         self.counter += 1
+
+        if self.counter % self.SPAWN_INCREASE_INTERVAL == 0:
+            if self.enemy_interval > self.MIN_ENEMY_INTERVAL:
+                self.enemy_interval -= 1
+
         if self.counter % self.enemy_interval == 0:
             if len(self.enemy_types) > 0:
                 new_enemy = self.enemy_types[random.randint(0, len(self.enemy_types) - 1)].copy()
