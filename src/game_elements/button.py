@@ -12,11 +12,11 @@ class Button:
             self,
             x: int,
             y: int,
-            size_x: int = 100,
-            size_y: int = 50,
+            size_x: int = 200,
+            size_y: int = 75,
             text: str = "unnamed",
             text_color: tuple[int, int, int] = (255,255,255),
-            btn_color: tuple[int, int, int] = (40,40,125)
+            btn_color: tuple[int, int, int] = (40,60,125)
     ):
         self.x = x - size_x / 2
         self.y = y - size_y / 2
@@ -26,7 +26,7 @@ class Button:
 
         self.text = text
         self.text_color = text_color
-        self.font = Font(None, int(self.size_x / 4))
+        self.font = Font(None, int(self.size_y / 2))
         self.surface_text = self.font.render(self.text, True, self.text_color)
         self.rect_text = self.surface_text.get_rect(
             center=(self.x + self.size_x / 2, self.y + + self.size_y / 2)
@@ -53,7 +53,7 @@ class Button:
         pygame.draw.rect(surface,
                          (red, green, blue),
                          Rect((self.x, self.y), (self.size_x, self.size_y)),
-                         border_radius=5
+                         border_radius=self.size_y
                          )
         surface.blit(self.surface_text, self.rect_text)
 
