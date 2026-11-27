@@ -6,6 +6,7 @@ from pygame.font import Font
 
 from pygame.sprite import Group
 
+from data.difficulty import Difficulty
 from game_elements.button import Button
 from game_elements.enemies import Enemy, Charger, Bouncer, Shooter, Exploder
 from game_elements.game_element import GameElement
@@ -26,9 +27,9 @@ class Game:
     SPAWN_INCREASE_INTERVAL = 150
 
     DIFFICULTY_LIST = [
-        {
-            "name": "Easy",
-            "enemies": [
+        Difficulty(
+            "Easy",
+            [
                 Charger(
                     speed=7,
                     projectile_amount=1,
@@ -49,19 +50,19 @@ class Game:
                     projectile_amount=6
                 ),
             ]
-        },
-        {
-            "name": "Normal",
-            "enemies": [
+        ),
+        Difficulty(
+            "Normal",
+            [
                 Charger(),
                 Bouncer(),
                 Shooter(),
                 Exploder(),
             ]
-        },
-        {
-            "name": "Hard",
-            "enemies": [
+        ),
+        Difficulty(
+            "Hard",
+            [
                 Charger(
                     speed=13,
                     projectile_amount=3,
@@ -82,10 +83,10 @@ class Game:
                     projectile_amount=12
                 ),
             ]
-        },
-        {
-            "name": "Impossible",
-            "enemies": [
+        ),
+        Difficulty(
+            "Impossible",
+            [
                 Charger(
                     speed=15,
                     projectile_amount=6,
@@ -106,7 +107,7 @@ class Game:
                     projectile_amount=16
                 ),
             ]
-        }
+        )
     ]
 
     def __init__(self, width: int = 1100, height: int = 600, fps: int = 60):
@@ -119,15 +120,12 @@ class Game:
         pygame.display.set_caption("pew pew game")
         self.clock = pygame.time.Clock()
 
-
-
         # Polices
         self.font_title = Font(None, 64)
         self.font_subtitle = Font(None, 32)
 
         # Gestion d'apparition d'ennemis
-        self.difficulty = 0
-        self.enemy_types = []
+        self.difficulty = Difficulty("Default", [])
 
         self.counter = 1
         self.enemy_interval = self.MAX_ENEMY_INTERVAL
@@ -167,7 +165,7 @@ class Game:
             Button(
                 x=int((self.width / len(self.DIFFICULTY_LIST) * i) + (self.width / len(self.DIFFICULTY_LIST) / 2)),
                 y=self.height // 2 + 50,
-                text=str(self.DIFFICULTY_LIST[i]["name"])
+                text=str(self.DIFFICULTY_LIST[i].name)
             ) for i in range(len(self.DIFFICULTY_LIST))
         ]
 
@@ -212,8 +210,8 @@ class Game:
                 self.enemy_interval -= 1
 
         if self.counter % self.enemy_interval == 0:
-            if len(self.enemy_types) > 0:
-                new_enemy = self.enemy_types[random.randint(0, len(self.enemy_types) - 1)].copy()
+            if len(self.difficulty.enemies) > 0:
+                new_enemy = self.difficulty.enemies[random.randint(0, len(self.difficulty.enemies) - 1)].copy()
                 new_enemy.x = self.width + new_enemy.size / 2
                 new_enemy.y = random.randint(0 + int(new_enemy.size / 2), self.height - int(new_enemy.size / 2))
                 new_enemy.limits = self.width, self.height
@@ -263,8 +261,7 @@ class Game:
 
         for i in range(len(self.DIFFICULTY_LIST)):
             if self.difficulty_buttons[i].clicked():
-                self.difficulty = i
-                self.enemy_types = self.DIFFICULTY_LIST[i]["enemies"]
+                self.difficulty = self.DIFFICULTY_LIST[i]
                 self.level_select = False
 
     def update_game_over(self):
