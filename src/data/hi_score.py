@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 import json
+from json import JSONDecodeError
+
 
 @dataclass()
 class HiScore:
@@ -38,8 +40,17 @@ class HiScoreHandler:
 
     def load(self) -> list[HiScore]:
         """Retourne la liste des meilleurs scores contenus dans le fichier .json du gestionnaire."""
-        with open(self.file_name, 'r', encoding='utf-8') as file:
-            return json.load(file, object_hook=hi_score_decoder)
+        try:
+            with open(self.file_name, 'r', encoding='utf-8') as file:
+                return json.load(file, object_hook=hi_score_decoder)
+        except FileNotFoundError:
+            with open(self.file_name, 'w', encoding='utf-8') as file:
+                json.dump([], file, cls=PersonEncoder, indent=4)
+            return []
+        except JSONDecodeError:
+            with open(self.file_name, 'w', encoding='utf-8') as file:
+                json.dump([], file, cls=PersonEncoder, indent=4)
+            return []
 
     def save(self, hi_scores: list[HiScore]) -> None:
         """
