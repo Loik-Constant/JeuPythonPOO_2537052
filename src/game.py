@@ -120,7 +120,7 @@ class Game:
         self.fps = fps
 
         self.window = pygame.display.set_mode((self.width, self.height))
-        pygame.display.set_caption("pew pew game")
+        pygame.display.set_caption("TP2 2537052")
         self.clock = pygame.time.Clock()
 
         # Polices
@@ -326,7 +326,7 @@ class Game:
         self.timer_icon.draw(self.window)
 
     def draw_level_select(self) -> None:
-        """Affiche les points de vies du joueur et le temps de survie du joueur"""
+        """Affiche le menu de sélection de difficulté"""
         surface_title = self.font_title.render(f"Choose a difficulty", True, self.TEXT_COLOR)
         rect_title = surface_title.get_rect(center=(self.width // 2, self.height // 2 - 100))
         self.window.blit(surface_title, rect_title)
@@ -351,12 +351,12 @@ class Game:
             self.player_projectiles.draw(self.window)
             self.enemies.draw(self.window)
             self.enemy_projectiles.draw(self.window)
-
             self.draw_ui()
 
         pygame.display.flip()
 
     def save_hi_scores(self):
+        """Enregistre les meilleurs scores dans le fichier .json du gestionnaire de scores"""
         self.hi_score_handler.save(
             [
                 HiScore(difficulty.name, difficulty.hi_score)
@@ -365,6 +365,7 @@ class Game:
         )
 
     def load_hi_scores(self):
+        """Modifie le meilleur score de chaque difficulté depuis le fichier .json du gestionnaire de scores"""
         hi_scores = self.hi_score_handler.load()
         for difficulty in self.DIFFICULTY_LIST:
             for hi_score in hi_scores:

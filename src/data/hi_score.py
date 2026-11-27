@@ -32,13 +32,20 @@ def hi_score_decoder(dct):
     return dct
 
 class HiScoreHandler:
+    """Gestionnaire pour le chargement et la sauvegarde des meilleurs scores."""
     def __init__(self, file_name):
         self.file_name = file_name
 
     def load(self) -> list[HiScore]:
+        """Retourne la liste des meilleurs scores contenus dans le fichier .json du gestionnaire."""
         with open(self.file_name, 'r', encoding='utf-8') as file:
             return json.load(file, object_hook=hi_score_decoder)
 
     def save(self, hi_scores: list[HiScore]) -> None:
+        """
+        Enregistre la liste des meilleurs scores dans le fichier .json du gesstionnaire.
+
+        :param hi_scores: La liste de score à enregistrer
+        """
         with open(self.file_name, 'w', encoding='utf-8') as file:
             json.dump(hi_scores, file, cls=PersonEncoder, indent=4)
