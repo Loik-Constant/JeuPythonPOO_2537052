@@ -1,3 +1,4 @@
+import json
 import random
 import sys
 
@@ -7,6 +8,7 @@ from pygame.font import Font
 from pygame.sprite import Group
 
 from data.difficulty import Difficulty
+from data.hi_score import HiScore, HiScoreHandler
 from game_elements.button import Button
 from game_elements.enemies import Enemy, Charger, Bouncer, Shooter, Exploder
 from game_elements.game_element import GameElement
@@ -26,6 +28,7 @@ class Game:
     MIN_ENEMY_INTERVAL = 30
     SPAWN_INCREASE_INTERVAL = 150
 
+    HI_SCORE_FILE = "hi_scores.json"
     DIFFICULTY_LIST = [
         Difficulty(
             "Easy",
@@ -129,6 +132,10 @@ class Game:
 
         self.counter = 1
         self.enemy_interval = self.MAX_ENEMY_INTERVAL
+
+        # Meilleurs scores
+        self.hi_score_handler = HiScoreHandler(self.HI_SCORE_FILE)
+        self.load_hi_scores()
 
         # Entités
         limits = (self.width, self.height)
@@ -244,6 +251,9 @@ class Game:
                 self.draw_ui()
 
         if self.player.is_dead():
+            if self.difficulty.hi_score < self.counter:
+                self.difficulty.hi_score = self.counter
+                self.save_hi_scores()
             self.game_over = True
 
         # Collision des ennemis avec les projectiles du joueur
@@ -317,12 +327,16 @@ class Game:
 
     def draw_level_select(self) -> None:
         """Affiche les points de vies du joueur et le temps de survie du joueur"""
-        surface_health = self.font_title.render("Choose a difficulty", True, self.TEXT_COLOR)
-        rect_health = surface_health.get_rect(center=(self.width // 2, self.height // 2 - 50))
-        self.window.blit(surface_health, rect_health)
+        surface_title = self.font_title.render(f"Choose a difficulty", True, self.TEXT_COLOR)
+        rect_title = surface_title.get_rect(center=(self.width // 2, self.height // 2 - 100))
+        self.window.blit(surface_title, rect_title)
 
-        for button in self.difficulty_buttons:
-            button.draw(self.window)
+        for i in range(len(self.difficulty_buttons)):
+            self.difficulty_buttons[i].draw(self.window)
+            if self.difficulty_buttons[i].hovered():
+                surface_title = self.font_subtitle.render(f"Hi-score : {self.DIFFICULTY_LIST[i].hi_score}", True, self.TEXT_COLOR)
+                rect_title = surface_title.get_rect(center=(self.width // 2, self.height // 2 - 50))
+                self.window.blit(surface_title, rect_title)
 
     def draw(self) -> None:
         """Effectue le rendu graphique complet d'une trame."""
@@ -341,6 +355,21 @@ class Game:
             self.draw_ui()
 
         pygame.display.flip()
+
+    def save_hi_scores(self):
+        self.hi_score_handler.save(
+            [
+                HiScore(difficulty.name, difficulty.hi_score)
+                for difficulty in self.DIFFICULTY_LIST
+            ]
+        )
+
+    def load_hi_scores(self):
+        hi_scores = self.hi_score_handler.load()
+        for difficulty in self.DIFFICULTY_LIST:
+            for hi_score in hi_scores:
+                if difficulty.name == hi_score.difficulty_name:
+                    difficulty.hi_score = hi_score.score
 
     def begin(self) -> None:
         """Lance et maintient la boucle principale du jeu."""
