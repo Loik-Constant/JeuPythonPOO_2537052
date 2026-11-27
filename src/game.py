@@ -1,4 +1,3 @@
-import math
 import random
 import sys
 
@@ -24,9 +23,9 @@ class Game:
 
     MAX_ENEMY_INTERVAL = 100
     MIN_ENEMY_INTERVAL = 30
-    SPAWN_INCREASE_INTERVAL = 1
+    SPAWN_INCREASE_INTERVAL = 150
 
-    ENEMY_LISTS = [
+    DIFFICULTY_LIST = [
         {
             "name": "Easy",
             "enemies": [
@@ -102,7 +101,6 @@ class Game:
                     speed=7
                 ),
                 Exploder(
-
                     wave_height=12,
                     wave_length=75,
                     projectile_amount=16
@@ -167,10 +165,10 @@ class Game:
         # Boutons
         self.difficulty_buttons = [
             Button(
-                x=int((self.width / len(self.ENEMY_LISTS) * i) + (self.width / len(self.ENEMY_LISTS) / 2)),
+                x=int((self.width / len(self.DIFFICULTY_LIST) * i) + (self.width / len(self.DIFFICULTY_LIST) / 2)),
                 y=self.height // 2 + 50,
-                text=str(self.ENEMY_LISTS[i]["name"])
-            ) for i in range(len(self.ENEMY_LISTS))
+                text=str(self.DIFFICULTY_LIST[i]["name"])
+            ) for i in range(len(self.DIFFICULTY_LIST))
         ]
 
         self.restart_button = Button(
@@ -194,20 +192,17 @@ class Game:
                     self.running = False
 
     def update(self) -> None:
-        """Met à jour l'état logique de la partie."""
+        """Met à jour l'état logique de l'application."""
         if self.level_select:
-            for i in range(len(self.ENEMY_LISTS)):
-                if self.difficulty_buttons[i].clicked():
-                    self.difficulty = i
-                    self.enemy_types = self.ENEMY_LISTS[i]["enemies"]
-                    self.level_select = False
-            return
+            self.update_level_select()
         elif self.game_over:
-            if self.restart_button.clicked():
-                self.level_select = True
-                self.game_over = False
-                self.reset_game_state()
-            return
+            self.update_game_over()
+        else:
+            self.update_game()
+
+
+    def update_game(self):
+        """Met à jour l'état logique de la partie."""
 
         # Apparition des ennemis
         self.counter += 1
@@ -262,6 +257,23 @@ class Game:
                     enemy.kill()
                     for projectile in enemy.get_death_projectiles():
                         projectile.add(self.enemy_projectiles)
+
+    def update_level_select(self):
+        """Met à jour l'état logique du menu de sélection de sifficulté."""
+
+        for i in range(len(self.DIFFICULTY_LIST)):
+            if self.difficulty_buttons[i].clicked():
+                self.difficulty = i
+                self.enemy_types = self.DIFFICULTY_LIST[i]["enemies"]
+                self.level_select = False
+
+    def update_game_over(self):
+        """Met à jour l'état logique du menu de fin de partie."""
+
+        if self.restart_button.clicked():
+            self.level_select = True
+            self.game_over = False
+            self.reset_game_state()
 
     def reset_game_state(self) -> None:
         self.player.x = self.width // 4
